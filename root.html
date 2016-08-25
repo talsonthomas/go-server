@@ -1,0 +1,394 @@
+<html>
+  <head>
+    <title>URL Short Links</title>
+    <link href="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css" rel="stylesheet">
+    <link href="//cdn.datatables.net/1.10.2/css/jquery.dataTables.min.css" rel="stylesheet">
+    <script src="//code.jquery.com/jquery-2.1.1.js"></script>
+    <script src="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js"></script>
+    <script src="//cdn.datatables.net/1.10.2/js/jquery.dataTables.min.js"></script>
+    <script>
+      $(document).ready(function(){
+        $('#ownedbyyou').dataTable();
+        $('#admin').dataTable();
+        $(".alert-box").click(function(e){
+            if ($(e.target).hasClass("alert-no")) {
+                $(".outer-alert").hide()
+            }
+        })
+        $(".close-login").click(function(){
+	  $(".outer-alert").hide()
+        })
+      });
+      function show_edit(shortcut, url, host_based, count, created){
+        $(".edit-box .panel-heading .heading").html("Edit the Short name entry for : <b>"+shortcut+"</b>")
+        var html='<div class="form-group">';
+        html+='          <input type=hidden name=hostbasedredirect value="'+host_based+'">';
+        html+='          <input type=hidden name=shortname value="'+shortcut+'">';
+        html+='          </div>';
+        html+='          <div class="form-group col-md-12">';
+        html+='          <div class="col-md-4">';
+        html+='            <label>Host Based redirect? :</label>';
+        html+='          </div> '+host_based;
+        html+='          </div>';
+        html+='          <div class="form-group col-md-12">';
+        html+='          <div class="col-md-4">';
+        html+='            <label>Counts :</label>';
+        html+='          </div> '+count;
+        html+='          </div>';
+        html+='          <div class="form-group col-md-12">';
+        html+='          <div class="col-md-4">';
+        html+='            <label>Created at :</label>';
+        html+='          </div> '+created;
+        html+='          </div>';
+        html+='          <div class="form-group col-md-12 ">';
+        html+='          <div class="col-md-3">';
+        html+='            <label>Long URL :</label>';
+        html+='          </div>';
+        html+='          <div class="col-md-9">';
+        html+='            <input class="form-control" required="" type=url name=url value="'+url+'">';
+        html+='          </div>';
+        html+='          </div>';
+        html+='          <div class="form-group col-md-3 col-md-offset-4">';
+        html+='          <button class="form-control btn btn-primary" type=submit name=action value="edit">Edit</button>';
+        html+='          </div>';
+        $(".edit-box .form-contents").html(html);
+        $(".edit-box").show()
+      }
+      function show_reassign(shortcut, url, host_based, count, created){
+        $(".reassign-box .panel-heading .heading").html("Ressign : <b> "+shortcut+"</b>")
+        var html='<div class="form-group">';
+        html+='          <input type=hidden name=hostbasedredirect value="'+host_based+'">';
+        html+='          <input type=hidden name=shortname value="'+shortcut+'">';
+        html+='          </div>';
+        html+='          <div class="form-group col-md-12">';
+        html+='          <div class="col-md-4">';
+        html+='            <label>Host Based redirect? :</label>';
+        html+='          </div> '+host_based;
+        html+='          </div>';
+        html+='          <div class="form-group col-md-12">';
+        html+='          <div class="col-md-4">';
+        html+='            <label>Counts :</label>';
+        html+='          </div> '+count;
+        html+='          </div>';
+        html+='          <div class="form-group col-md-12">';
+        html+='          <div class="col-md-4">';
+        html+='            <label>Created at :</label>';
+        html+='          </div> '+created;
+        html+='          </div>';
+        html+='          <div class="form-group col-md-12 ">';
+        html+='          <div class="col-md-3">';
+        html+='            <label>Long URL :</label>';
+        html+='          </div>';
+        html+='          <div class="col-md-9 ellipsis">';
+        html+='            <a href="'+url+'" class="ellipsis">'+url+'</a>';
+        html+='          </div>';
+        html+='          </div>';
+        html+='          <div class="form-group col-md-12 ">';
+        html+='          <div class="col-md-3">';
+        html+='            <label>Reassign To :</label>';
+        html+='          </div>';
+        html+='          <div class="col-md-9 ellipsis">';
+        html+='            <input class="form-control" required="" type="email" name="newowner" placeholder="Reassign to">';
+        html+='          </div>';
+        html+='          </div>';
+        html+='          <div class="form-group col-md-3 col-md-offset-4">';
+        html+='          <button class="form-control btn btn-primary" type=submit name=action value="reassign">Reassign</button>';
+        html+='          </div>';
+        $(".reassign-box .form-contents").html(html);
+        $(".reassign-box").show()
+      }
+      function show_delete(shortcut, url, host_based){
+        $(".alert-box .panel-heading .heading").html("Delete this entry : <b> "+shortcut+"</b>")
+        var html='        <input type=hidden name=hostbasedredirect value="'+host_based+'">';
+        html+='        <input type=hidden name=shortname value="'+shortcut+'">';
+        html+='        <center>';
+        html+='            <Button class="btn btn-danger alert-yes" type=submit name=action value="delete">Yes</Button>';
+        html+='            <input type="button" class="btn btn-success alert-no" value="No">';
+        html+='        </center>';
+        $(".alert-box .form-contents").html(html);
+        $(".alert-box").show()
+      }
+    </script>
+    <style>
+        .btn, th{
+            font-size: 13px;
+        }
+        td{
+            font-size: 13px;
+            word-break: break-all;
+        }
+      .long-url{
+        display: inline-block;
+        height: 40px;
+        text-overflow: ellipsis;
+        overflow: hidden;
+      }
+      
+      .outer-alert{
+          position: fixed;
+          top: 0px;
+          left: 0px;
+          z-index: 100;
+          width: 100%;
+          background-color: rgba(0,0,0,.7);
+          height: 100%;
+      }
+	.inner-alert{
+		position:absolute;
+		top:20%;
+                z-index: 1;
+	}
+
+	.msg-box{
+		z-index: 1;
+		position:fixed;
+		top:20%;
+		width:80%;
+		left:10%;
+		display:none;
+	}
+	.close-login{
+		float:right;
+		color:#3071a9;
+		cursor:pointer;
+		font-size:small;
+	}
+        .alert-yes{
+            margin-right: 50px;
+        }
+        .ellipsis{
+          overflow: hidden;
+          -ms-text-overflow: ellipsis;
+          -o-text-overflow: ellipsis;
+          text-overflow: ellipsis;
+        }
+      
+    </style>
+  </head>
+  <body>
+    <div class="outer-alert alert-box" style="display: none;">
+      <div class="panel panel-default inner-alert col-md-4 col-md-offset-4" style="padding:0px;">
+        <div class="panel-heading">
+          <span class="heading"> Heading </span>
+        </div>
+        <div class="panel-body">
+            
+            <form action=/_app/ method=post>
+                {% raw xsrf_form_html() %}
+                <div class="form-contents">
+                  </div>
+            </form>
+          
+        </div>
+      </div>
+    </div>
+  <div class="outer-alert edit-box" style="display: none;">
+          <div class="panel panel-default inner-alert col-md-6 col-md-offset-3" style="padding:0px;">
+              <div class="panel-heading">
+                      <span class="heading"> Sign In </span> <span class="close-login">(close)</span>
+              </div>
+              <div class="panel-body">
+                <form role="form" action=/_app/ method=post>
+                {% raw xsrf_form_html() %}
+                <div class="form-contents">
+                  </div>
+                </form>
+              </div>
+          </div>
+  </div>
+    <div class="outer-alert reassign-box" style="display: none;">
+          <div class="panel panel-default inner-alert col-md-6 col-md-offset-3" style="padding:0px;">
+              <div class="panel-heading">
+                      <span class="heading"> Sign In </span> <span class="close-login">(close)</span>
+              </div>
+              <div class="panel-body">
+                <form role="form" action=/_app/ method=post>
+                {% raw xsrf_form_html() %}
+                <div class="form-contents">
+                  </div>
+                </form>
+              </div>
+          </div>
+  </div>
+    <nav class="navbar navbar-default navbar-static-top" role="navigation">
+      <div class="container">
+        <ul class="nav navbar-nav">
+            <li><div class="navbar-header"><a class="navbar-brand" target="_blank" href="https://github.corp.inmobi.com/platform-pe/irs/wiki"><span class="glyphicon glyphicon-link"></span> URL Short Links</a></div></li>
+          </ul>
+        <ul class="nav navbar-nav navbar-right">
+          {% if username %}
+          <li><a href="/_app/logout"> {{username}} Logout</a></li>
+          {% else %}
+          <li><a href="/_app/login"> Login</a></li>
+          {% end %}
+        </ul>
+      </div>
+    </nav>
+    <div class="container main">
+      <div class="col-md-8  panel">
+        <div class="panel-heading">
+          <h3>Create URL Shortcut</h3>
+        </div>
+        <div class="panel-body">
+          <form action="/_app/" method=post class="form-horizontal" role="form">
+            <div class="form-group">
+              <div class="col-sm-12">
+                <input type="url" name="url" required="" class="form-control" id="url" placeholder="Your long URL">
+              </div>
+            </div>
+            <div class="form-group">
+              <div class="col-sm-8">
+                <input type="text" name="shortname" required="" class="form-control" id="inputPassword3" placeholder="Short name">
+              </div>
+            </div>
+            {% if username == adminuser %}
+            <div class="form-group">
+              <div class="col-sm-3">
+                <div class="checkbox">
+                  <label>
+                    <input name="hostbasedredirect" type="checkbox" value="True"> Host header based short link?
+                  </label>
+                </div>
+              </div>
+              </div>
+            {% end %}
+            {% raw xsrf_form_html() %}
+            <div class="form-group">
+              <div class="col-sm-4">
+                  <button type="submit" name="action" value="create" class="btn btn-primary">Create</button>
+                </div>
+            </div>
+          </form>
+        </div>
+      </div>
+      <div class="col-md-8  panel">
+        <div class="panel-heading">
+          <h3>Auto Generate URL Shortcut</h3>
+        </div>
+        <div class="panel-body">
+          <form action="/_app/" method="post" class="form-horizontal" role="form">
+            <div class="form-group">
+              <div class="col-sm-12">
+                <input name="url" type="url" required="" class="form-control" id="url" placeholder="Your long URL">
+                <input type="hidden" name="shortname" value="_">
+              </div>
+            </div>
+            {% raw xsrf_form_html() %}
+            <div class="form-group">
+              <div class="col-sm-2">
+                <button type="submit" name="action" value="generate" class="btn btn-primary">Generate</button>
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+      <div class="col-md-8  panel">
+        <div class="panel-heading">
+          <h3>Search All Entries</h3>
+        </div>
+        <div class="panel-body">
+          <form action="/_app/" class="form-horizontal" role="form" method="post">
+            <div class="form-group">
+              <div class="col-sm-6">
+                <input type="text" name="regex" class="form-control" id="url" placeholder="^.+$" required="">
+              </div>
+              <input type=hidden name=shortname value=_>
+              {% raw xsrf_form_html() %}
+              <div class="col-sm-4">
+                <button type="submit" name="action" value="search" class="btn btn-primary">Search</button>
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+      {% if username %}
+      <div class="col-md-12  panel">
+        <div class="panel-heading">
+          <h3>URL shortcuts owned by you</h3>
+        </div>
+        <div class="panel-body">
+          <table class="table table-hover" id="ownedbyyou">
+            <thead>
+              <tr>
+                <th width="60%">Long URL</th>
+                <th width="20%">Short Link></th>
+                <th width="5%">Count</th>
+                <th width="5%">Host Based</th>
+                <th>Edit</th>
+                <th>Re Assign</th>
+                <th>Delete</th>
+              </tr>
+            </thead>
+            <tbody>
+              
+              {% for item in shorturls.find({'owner': username}) %}
+                <tr>
+                  <td><a href="{{escape(item['url'])}}"><span title="{{escape(item['url'])}}" class="long-url">{{escape(item['url'])}}</span></a></td>
+                  {% if item['host_header_based_redirect'] %}
+                    <td><a href="http://{{escape(item['shortname'])}}" target="_blank">{{escape(item['shortname'])}}</a></td>
+                  {% else %}
+                    <td><a href="/{{escape(item['shortname'])}}" target="_blank">{{escape(item['shortname'])}}</a></td>
+                  {% end %}
+                  <td>{{escape(str(item['redirect_count']))}}</td>
+                  <td>{{escape(str(item['host_header_based_redirect']))}}</td>
+                  <td>
+                    <button type="submit" class="btn btn-primary" onclick="show_edit('{{escape(item['shortname'])}}', '{{escape(item['url'])}}', '{{escape(str(item['host_header_based_redirect']))}}', '{{escape(str(item['redirect_count']))}}', '{{escape(item['created'].strftime("%d %B %Y"))}}');">Edit</button>
+                  </td>
+                  <td>
+                    <button type="submit" class="btn btn-primary" onclick="show_reassign('{{escape(item['shortname'])}}', '{{escape(item['url'])}}', '{{escape(str(item['host_header_based_redirect']))}}', '{{escape(str(item['redirect_count']))}}', '{{escape(item['created'].strftime("%d %B %Y"))}}');">Reassign</button>
+                  </td>
+                  <td><button type="submit" class="btn btn-danger" onclick="show_delete('{{escape(item['shortname'])}}', '{{escape(item['url'])}}', '{{escape(str(item['host_header_based_redirect']))}}');">Delete</button></td>
+                </tr>
+              {% end %}
+              
+            </tbody>
+          </table>
+        </div>
+        {% if username == adminuser %} 
+        <div class="panel-heading">
+          <h3>Administer URL shortcuts</h3>
+        </div>
+        <div class="panel-body">
+          <table class="table table-hover" id="admin">
+            <thead>
+              <tr>
+                <th width="60%">Long URL</th>
+                <th width="20%">Short Link></th>
+                <th width="5%">Count</th>
+                <th width="5%">Host Based</th>
+                <th>Edit</th>
+                <th>Re Assign</th>
+                <th>Delete</th>
+              </tr>
+            </thead>
+            <tbody>
+              
+              {% for item in shorturls.find({}) %}
+                <tr>
+                  <td><a href="{{escape(item['url'])}}"><span title="{{escape(item['url'])}}" class="long-url">{{escape(item['url'])}}</span></a></td>
+                  {% if item['host_header_based_redirect'] %}
+                    <td><a href="http://{{escape(item['shortname'])}}" target="_blank">{{escape(item['shortname'])}}</a></td>
+                  {% else %}
+                    <td><a href="/{{escape(item['shortname'])}}" target="_blank">{{escape(item['shortname'])}}</a></td>
+                  {% end %}
+                  <td>{{escape(str(item['redirect_count']))}}</td>
+                  <td>{{escape(str(item['host_header_based_redirect']))}}</td>
+                  <td>
+                    <button type="submit" class="btn btn-primary" onclick="show_edit('{{escape(item['shortname'])}}', '{{escape(item['url'])}}', '{{escape(str(item['host_header_based_redirect']))}}', '{{escape(str(item['redirect_count']))}}', '{{escape(item['created'].strftime("%d %B %Y"))}}');">Edit</button>
+                  </td>
+                  <td>
+                    <button type="submit" class="btn btn-primary" onclick="show_reassign('{{escape(item['shortname'])}}', '{{escape(item['url'])}}', '{{escape(str(item['host_header_based_redirect']))}}', '{{escape(str(item['redirect_count']))}}', '{{escape(item['created'].strftime("%d %B %Y"))}}');">Reassign</button>
+                  </td>
+                  <td><button type="submit" class="btn btn-danger" onclick="show_delete('{{escape(item['shortname'])}}', '{{escape(item['url'])}}', '{{escape(str(item['host_header_based_redirect']))}}');">Delete</button></td>
+                </tr>
+              {% end %}
+              
+            </tbody>
+          </table>
+        </div>
+        {% end %}
+      </div>
+      {% end %}
+    </div>
+  </body>
+</html>

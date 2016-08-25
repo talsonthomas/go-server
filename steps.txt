@@ -1,0 +1,116 @@
+ Sudhakar B G edited this page on 30 May · 28 revisions
+Pages 1
+
+    Home
+
+Clone this wiki locally
+
+Welcome to the InMobi URL Redirector (a.k.a. short links) wiki!
+
+All problems in computer science can be solved by another level of indirection... Except for the problem of too many levels of indirection.
+
+-- David Wheeler
+
+This is a simple service that allows users to create URL shortcuts that are memorable, thus reducing friction involved in accessing various company internal (or external) web based resources. Particularly useful for Google Docs URL targets, long and unwieldy monitoring dashboard/graphs/reports URLs and for ultra short names for services that are accessed often (e.g., m for mail, g for groups, j for jira etc.). The service makes it easy set up a canonical name to reference a resource and move the resource around without having links go stale (e.g., links embedded in emails or other web pages or docs) and without having to go through the hassle of updating bookmarks etc. It also supports throw away URLs (the kind that services like bit.ly or goo.gl provide).
+
+Access the service at http://go.corp.inmobi.com/ - or - at http://go/ - this is a short URL service after all :)
+
+Implementation: Python Tornado web/application server using MongoDB as the storage backend. Integrates with Active Directory for user authentication.
+
+The service currently provides the following features:
+
+    Redirect service for user created short cuts (Host: based and URL path based). Host based redirects are admin created (for now).
+    Create/Modify/Delete URL shortcuts.
+    Auto generate "gibberish" shortcuts (for throw away use - links to monitoring dashboards etc.)
+    Search URLs (by short name, owner or target URL string content). Regex based search.
+    Reassign short name ownership. This is akin to giving away UNIX file ownership. Once ownership is given away, you can't get it back (without admin intervention).
+    Admin support - admin user can edit/modify/delete/reassign any and all short names.
+    Referer HTTP header scrubbing.
+    URL redirect statistics (per-short name)
+    Server stats
+
+Shortcut types supported
+URL path based
+
+Accessed from the browser as http://go/shortname or http://go/shortname/abc/def or http://go/shortname/abc/def?efg=hij&klm=nop#qrs
+
+The service uses the first path component as the key to lookup the URL in the short names database. It then adds the path components following (if any) to the target found to derive the final target URL before sending an HTTP redirect (technically, not a 302 server side redirect but a client side redirect - see below for why).
+Host header based
+
+This is an admin only feature (for now). Please open a support ticket w/ IT Helpdesk to get a host based redirect added to the short links service (this involves creating a DNS CNAME record in the corp.inmobi.com domain pointing to the redirect service). Unlike path based short names, which can be created by anyone for any reason without restriction, host based short names are reserved for company (or largish group) wide short links.
+
+Host based redirects are accessed from the browser as http://shortname or http://shortname/abc/def, where shortname is a DNS CNAME to the short links service (a.k.a. redirect service). The .go.corp.inmobi.com DNS domain appears first in the DNS search suffix list on corp machines, so unqualified names which have a DNS CNAME setup pointing to go.corp.inmobi.com resolve to the redirect service. In the case of a host based redirect, the lookup key is simply the incoming Host: header value. Any path components of the request are just appended to the looked up URL to form the target URL, which the user is then redirected to as usual.
+
+Note: Unlike URL path based short urls, the path components of the incoming Host: based request are added in their entirety to form the final target URL. Path based url redirects exclude the first component of the URL path (obviously) and append the rest to the configured redirect url.
+
+Also note that the short URLs database can contain both a URL path based and Host header based short name that is identical - with no ambiguity. They could (in theory) point at different target URLs - not a great idea in practice though.
+
+Unrecognized short names result in a redirect to the 'go' application's main page.
+
+All underscores in path based short names are automatically replaced with hyphens. This is to prevent potential confusion about whether the short name you want to get to is http://go/service_design_doc or http://go/service-design-doc or http://go/service_design-doc (happens more often than you would think!).
+Referer header scrubbing
+
+The URL of the page that contains a link to an external resource normally leaks the Referer: HTTP header to the target page. Referer: header leaking potentially exposes internal URL namespace to the outside world. Browsers follow certain rules regarding Referer: headers. HTTPS referring page only leaks to an HTTPS target. HTTP referring page leaks to both an HTTP and an HTTPS target. This is also true if the referring page contains a short link, such as this service offers. A 302 redirect preserves the original referring page URL as the Referer: header value. To get around this, we render a page with a <meta name=referrer value=never> and a client side redirect directive (via <meta http-equiv=refresh>) which effectively scrubs the Referer header that gets sent to the target site.
+Authentication
+
+This app now uses a single sign on login server for auth (login.corp.inmobi.com). The SSO server is still beta and in testing - if you encounter any issues logging in or accessing this app please drop a note to ops-engg@ and let us know.
+
+All mutating operations (create/delete/edit/reassign ownership) require user authentication. The service connects to an LDAP/AD backend identity provider to validate credentials presented. If the user authenticates successfully, an AuthSession cookie is generated and set. This cookie is path scoped to /_app/ (reserved URL namespace used by the app) with httpOnly and Secure cookie properties set, and is timestamped (to mitigate replay by non-browser clients). The cookie is signed (HMAC) with a server side secret to prevent client side tampering - SSL is enforced on the connection to the service to prevent MITM. Note: URL redirection itself does not require auth. Nor does searching for URL short names.
+Guidelines on shortnames
+
+    Since this is a common service with a shared shortname namespace, please do not create overly generic shortnames (e.g., lhr1-hw would be a poor choice vs. adserve-lhr1-hw. Similarly, design-doc is overly broad whereas ims-design-doc qualifies the short name to the point of being useful). This makes searching for and finding your links easier and more intuitive (for yourself and others).
+
+    Host: based shortnames are incredibly useful, but please ask yourself if the Host: header based shortname you want to set up is large enough scope to be generally useful across the company (or at least across your org). Examples of appropriate Host: based redirects would be: http://g pointing at Google groups or http://yoda pointing at https://yoda.data.inmobi.com:8443/yodawebclient). You get the idea. Also note that, as part of this project, DNS search suffixes have now been configured on machines, so pretty much anything in the .corp.inmobi.com, .inmobi.com and .mkhoj.com DNS domains automatically resolves correctly, e.g., http://jira resolves to jira.corp.inmobi.com in DNS, so Host: redirects are really only appropriate for cross domain target URLs for domains not in the search suffix list or for ultra short names (e.g., j instead of jira).
+
+    If possible, please reference the go link on the target doc/web page the link points to (reverse resolution is often very useful).
+
+TODO
+
+    Set up the application to set properly scoped cookie path (see above). [Done]
+    Gracefully handle short cuts owned by exited employees.
+    Contact the owner of the short link to request ownership transfer. [Admin intervention needed at the moment]
+    Simple way to approve/reject the short link transfer request.
+    Groups based ownership (need a company wide groups infrastructure first).
+    APIs (particularly for gibberish URL short cut generation - could be used via a bookmarklet or similar).
+    Expose server stats (distinct from redirect stats) for monitoring [Done - sorta kinda]
+    Allow shortnames themselves to be edited (vs. target URLs)
+    Check and alert users when they are about to create a short name to a target that already has a different short name configured.
+    Disallow '/' character in the short name to prevent users from creating accidental short names like 'go/blah'
+    If the accessed short name doesn't exist, accept that as a search keyword and show the results of the search
+
+Code contributions welcome!
+Caveats
+
+Works if you are on VPN or in the office connected to the corp network (wired or wifi). This can create some issues - you try and follow a short link to a Google doc while not on VPN or on the corp network. Even though the target (the Google doc) itself is reachable directly, the short link does not work, because go.corp.inmobi.com is unreachable. Externalizing the service is possible, but needs to be done carefully with due consideration to security. Not planned for now.
+
+Firefox domain guessing and search settings that can get in the way (domain guessing will take you to Disney's go.com). What they should be set to to disable that behavior (via about:config):
+
+    browser.fixup.alternate.enabled => false
+    keyword.enabled => false
+
+Make sure to type: http:// in the browser bar so your URL does not get interpreted as a search query.
+
+Negative DNS caching on Mac: sudo dscacheutil -flushcache
+
+DNS sometimes (intermittently) fails to resolve on Macs (dig and nslookup work fine). Try:
+
+sudo launchctl unload -w /System/Library/LaunchDaemons/com.apple.mDNSResponder.plist
+
+sudo launchctl load -w /System/Library/LaunchDaemons/com.apple.mDNSResponder.plist
+
+More info here: http://go.corp.inmobi.com/mac-dns-issues
+Operations
+
+This service runs on a VM in corp (hrmsldapsync.corp.inmobi.com). It shares the VM with a couple of other applications - who.corp.inmobi.com and ldap-account-check.corp.inmobi.com. There is a shared Nginx front end which directs traffic to the 3 backend apps based on the incoming Host header.
+
+The shared Nginx conf is here:
+
+https://github.corp.inmobi.com/platform-pe/pe-common/blob/master/nginx.conf
+
+Mongo daily database backups are here:
+
+s3://inmobi-go-database-backup/
+Full Disclosure
+
+Inspired by a similar service at Google.
+

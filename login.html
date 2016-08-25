@@ -1,0 +1,38 @@
+<html>
+  <head>
+    <title>URL Short Links</title>
+    <link href="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css" rel="stylesheet">
+    <script src="//code.jquery.com/jquery-2.1.1.js"></script>
+    <script src="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js"></script>
+  </head>
+  <body>
+    <nav class="navbar navbar-default navbar-static-top" role="navigation">
+      <div class="container">
+        <ul class="nav navbar-nav">
+            <li><div class="navbar-header"><a class="navbar-brand" target="_blank" href="https://github.corp.inmobi.com/platform-pe/irs/wiki"><span class="glyphicon glyphicon-link"></span> URL Short Links</a></div></li>
+          </ul>
+      </div>
+    </nav>
+    <div class="container">
+      <div class="col-md-5 col-md-offset-3 panel">
+          <div class="panel-heading">
+            <h4>Login</h4>
+          </div>
+          <div class="panel-body">
+            <form action="/_app/login" method="post" role="form">
+              <div class="form-group">
+                <input autofocus="" class="form-control" id="username" name="username" placeholder="Username" required="" type="text">
+              </div>
+              <div class="form-group">
+                <input class="form-control" id="password" name="password" placeholder="Password" required="" type="password">
+              </div>
+              {% raw xsrf_form_html() %}
+              <div class="form-group">
+                <button type="submit" class="btn btn-lg btn-primary btn-block" type="submit">Login</button>
+              </div>
+            </form>
+          </div>
+        </div>
+    </div>
+  </body>
+</html>
